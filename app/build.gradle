@@ -29,6 +29,10 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    // 开启元件绑定View Binding,替代findViewById()
+    buildFeatures{
+        viewBinding true
+    }
 }
 
 dependencies {
