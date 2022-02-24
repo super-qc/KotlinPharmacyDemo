@@ -1,5 +1,6 @@
 package com.study.pharmacydemo
 
+import android.content.Intent
 import android.opengl.Visibility
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.study.pharmacydemo.Constants.Companion.PHARMACIES_DATA_URL
 import com.study.pharmacydemo.adapter.MainAdapter
+import com.study.pharmacydemo.data.Feature
 import com.study.pharmacydemo.data.PharmacyInFo
 import com.study.pharmacydemo.databinding.ActivityMainBinding
 import com.study.pharmacydemo.util.OkHttpUtil
@@ -20,7 +22,7 @@ import okhttp3.*
 import java.io.IOException
 import java.lang.StringBuilder
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
     //lateinit var tv_content: TextView;
 
     private lateinit var binding: ActivityMainBinding
@@ -41,18 +43,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         viewManager = LinearLayoutManager(this)
-        viewAdapter = MainAdapter()
+        viewAdapter = MainAdapter(this)
 
         binding.recyclerViewPharmacy.apply {
             layoutManager = viewManager
             adapter = viewAdapter
             // 设置分割线
+            /*
             addItemDecoration(
                 DividerItemDecoration(
                     this@MainActivity,
                     DividerItemDecoration.VERTICAL
                 )
             )
+            */
         }
     }
 
@@ -62,9 +66,15 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(response: Response) {
                 val pharmacInfo = Gson().fromJson(response.body?.string(), PharmacyInFo::class.java)
                 Log.d("MainActivity", "pharmacInfo.type${pharmacInfo.type}")
+
+                val data = pharmacInfo.features.filter {
+                    it.property.name=="臺東縣"&&it.property.town=="池上鄉"
+                }
+                data.forEach{
+                    Log.d("MainActivity", "data.forEach it.property.name : ${it.property.name}")
+                }
                 runOnUiThread {
                     viewAdapter.pharmacyList = pharmacInfo.features
-
                     binding.progressBar.visibility = View.GONE
                 }
 
@@ -77,7 +87,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
 
+    override fun onItemClickListener(data: Feature) {
+      val intent= Intent(this,PharmacyDetailActivity::class.java);
+        intent.putExtra("data",data)
+        startActivity(intent)
     }
 
     private fun getPharmaciesData3() {
@@ -160,4 +175,6 @@ class MainActivity : AppCompatActivity() {
         }
         )
     }
+
+
 }

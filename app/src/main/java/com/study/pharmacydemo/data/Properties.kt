@@ -1,5 +1,7 @@
 package com.study.pharmacydemo.data
 
+import java.io.Serializable
+
 data class Property(
     val address: String,
     val available: String,
@@ -16,4 +18,4 @@ data class Property(
     val town: String,
     val updated: String,
     val website: String
-)
+): Serializable

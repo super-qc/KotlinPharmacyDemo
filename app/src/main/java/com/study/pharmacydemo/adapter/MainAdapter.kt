@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.study.pharmacydemo.data.Feature
 import com.study.pharmacydemo.databinding.ItemViewBinding
 
-class MainAdapter : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
+class MainAdapter(private val iItemClickListener :IItemClickListener) : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
 
     var pharmacyList: List<Feature> = emptyList()
         set(value) {
@@ -29,11 +29,18 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
             tvName.text = property.name
             tvAdultAmount.text=property.mask_adult.toString()
             tvChildAmount.text=property.mask_child.toString()
+            clItem.setOnClickListener {
+                iItemClickListener.onItemClickListener(pharmacyList[position])
+            }
         }
     }
 
     override fun getItemCount(): Int {
         return pharmacyList.size
+    }
+
+    interface IItemClickListener{
+        fun onItemClickListener(data:Feature)
     }
 
 }
