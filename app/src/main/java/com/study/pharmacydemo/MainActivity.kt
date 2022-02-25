@@ -67,12 +67,34 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
                 val pharmacInfo = Gson().fromJson(response.body?.string(), PharmacyInFo::class.java)
                 Log.d("MainActivity", "pharmacInfo.type${pharmacInfo.type}")
 
-                val data = pharmacInfo.features.filter {
-                    it.property.name=="臺東縣"&&it.property.town=="池上鄉"
+                /*
+
+                //filter语言的使用 臺東縣 ,town:池上鄉
+                val data = pharmacInfo.features
+                    .filter {
+                    it.property.county=="臺東縣"&&it.property.town=="池上鄉"
                 }
                 data.forEach{
-                    Log.d("MainActivity", "data.forEach it.property.name : ${it.property.name}")
+                    Log.d("MainActivity", "data.forEach it.property.county : ${it.property.county} ,town:${it.property.town}")
+                }*/
+
+                // groupBy分组 分组取出每个城市中的每个乡镇的每个药局的成人口罩数量和儿童口罩数量
+                val countryData = pharmacInfo.features.groupBy { it.property.county }
+                for (country in countryData) {
+                    Log.d("MainActivity", "--${country.key} ")
+                    val townData = country.value.groupBy { it.property.town }
+                    for (town in townData) {
+                        Log.d("MainActivity", "---${town.key} ")
+                        for (tv_val in town.value) {
+                            Log.d(
+                                "MainActivity",
+                                "${tv_val.property.name} : 成人 :${tv_val.property.mask_adult},儿童：${tv_val.property.mask_child}"
+                            )
+                        }
+                    }
+
                 }
+
                 runOnUiThread {
                     viewAdapter.pharmacyList = pharmacInfo.features
                     binding.progressBar.visibility = View.GONE
@@ -90,8 +112,8 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
     }
 
     override fun onItemClickListener(data: Feature) {
-      val intent= Intent(this,PharmacyDetailActivity::class.java);
-        intent.putExtra("data",data)
+        val intent = Intent(this, PharmacyDetailActivity::class.java);
+        intent.putExtra("data", data)
         startActivity(intent)
     }
 
