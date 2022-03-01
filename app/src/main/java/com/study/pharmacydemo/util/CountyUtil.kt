@@ -466,4 +466,12 @@ object CountyUtil {
         val index = counties.indexOf(countyName)
         return towns[index]
     }
+
+    fun getCountyIndexByName(countyName: String):Int{
+        return counties.indexOf(countyName)
+    }
+    fun getTownIndexByName(countyName: String,townName: String):Int{
+        val index = counties.indexOf(countyName)
+        return towns[index].indexOf(townName)
+    }
 }

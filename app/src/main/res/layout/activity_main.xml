@@ -4,13 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_view_pharmacy"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/spinner_county"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/spinner_town"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/spinner_town"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/spinner_county"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_pharmacy"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cl_spinner" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -20,5 +47,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></ProgressBar>
+        app:layout_constraintTop_toTopOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

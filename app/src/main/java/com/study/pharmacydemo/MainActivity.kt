@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +16,7 @@ import com.study.pharmacydemo.adapter.MainAdapter
 import com.study.pharmacydemo.data.Feature
 import com.study.pharmacydemo.data.PharmacyInFo
 import com.study.pharmacydemo.databinding.ActivityMainBinding
+import com.study.pharmacydemo.util.CountyUtil
 import com.study.pharmacydemo.util.OkHttpUtil
 import com.study.pharmacydemo.util.OkHttpUtil.Companion.mOkHttpUtil
 import okhttp3.*
@@ -28,13 +29,13 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var viewAdapter: MainAdapter
+    private lateinit var pharmacInfo: PharmacyInFo
+
+    private var currentCounty: String = "臺北市"
+    private var currentTown: String = "中山區"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /*
-        setContentView(R.layout.activity_main)
-         tv_content = findViewById(R.id.tv_content)
-        */
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initView()
@@ -58,13 +59,67 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
             )
             */
         }
+        val countryAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            CountyUtil.getAllCountiesName()
+        )
+        binding.spinnerCounty.adapter = countryAdapter
+
+        binding.spinnerCounty.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    currentCounty = binding.spinnerCounty.selectedItem.toString()
+                    Log.d("MainActivity", "选择的县：${binding.spinnerCounty.selectedItem}")
+                    setSpinnerTown()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+
+                }
+
+            }
+        binding.spinnerTown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                currentTown = binding.spinnerTown.selectedItem.toString()
+                getPharmaciesData()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+        }
+        setDefaultCountyWithTown()
+
+    }
+
+    private fun setDefaultCountyWithTown() {
+        binding.spinnerCounty.setSelection(CountyUtil.getCountyIndexByName(currentCounty))
+        setSpinnerTown()
+    }
+
+    private fun setSpinnerTown() {
+        var list = CountyUtil.getTownsByCountyName(currentCounty)
+        val adapterTown = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list)
+        binding.spinnerTown.adapter = adapterTown
+        binding.spinnerTown.setSelection(CountyUtil.getTownIndexByName(currentCounty, currentTown))
+
     }
 
     private fun getPharmaciesData() {
         binding.progressBar.visibility = View.VISIBLE
         mOkHttpUtil.getAsync(PHARMACIES_DATA_URL, object : OkHttpUtil.ICallBack {
             override fun onResponse(response: Response) {
-                val pharmacInfo = Gson().fromJson(response.body?.string(), PharmacyInFo::class.java)
+                pharmacInfo = Gson().fromJson(response.body?.string(), PharmacyInFo::class.java)
                 Log.d("MainActivity", "pharmacInfo.type${pharmacInfo.type}")
 
                 /*
@@ -78,6 +133,7 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
                     Log.d("MainActivity", "data.forEach it.property.county : ${it.property.county} ,town:${it.property.town}")
                 }*/
 
+                /*
                 // groupBy分组 分组取出每个城市中的每个乡镇的每个药局的成人口罩数量和儿童口罩数量
                 val countryData = pharmacInfo.features.groupBy { it.property.county }
                 for (country in countryData) {
@@ -93,10 +149,10 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
                         }
                     }
 
-                }
+                }*/
 
                 runOnUiThread {
-                    viewAdapter.pharmacyList = pharmacInfo.features
+                    updateRecycleView()
                     binding.progressBar.visibility = View.GONE
                 }
 
@@ -109,6 +165,15 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
                 }
             }
         })
+    }
+
+    private fun updateRecycleView() {
+        var filterData =
+            pharmacInfo?.features?.filter { it.property.county == currentCounty && it.property.town == currentTown }
+        if(filterData!=null){
+            viewAdapter.pharmacyList=filterData
+        }
+
     }
 
     override fun onItemClickListener(data: Feature) {
