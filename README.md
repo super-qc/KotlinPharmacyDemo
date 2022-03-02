@@ -14,4 +14,11 @@ kotlin编写的口罩地图应用
    11. CardView布局使用  
    12. 过滤集合函数 filter(),分组函数 groupBy()
    13. Spinner下拉菜单与二级联动
-   
+      获取APP权限方法
+       
+
+
+其他：
+    匿名对象：
+       object: Obj()
+    
