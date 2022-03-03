@@ -14,8 +14,10 @@ kotlin编写的口罩地图应用
    11. CardView布局使用  
    12. 过滤集合函数 filter(),分组函数 groupBy()
    13. Spinner下拉菜单与二级联动
-      获取APP权限方法
-       
+   14. 获取APP定位权限、GPS状态、经纬度
+   15. Kotlin可空类型
+   16. Google Map显示当前位置、在地图上添加和清除标记、显示口罩资料、自定义Marker
+  
 
 
 其他：

@@ -51,4 +51,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
+    // 获取经纬度
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+
+    // Google Map
+    implementation 'com.google.android.gms:play-services-maps:18.0.2'
 }
