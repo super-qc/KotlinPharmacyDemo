@@ -1,5 +1,6 @@
 # PharmacyDemo
 kotlin编写的口罩地图应用  
+
 包含知识点：  
    1. OkHttp的基本使用方式  
    2. OkHttp非同步进行Get请求  
@@ -17,10 +18,16 @@ kotlin编写的口罩地图应用
    14. 获取APP定位权限、GPS状态、经纬度
    15. Kotlin可空类型
    16. Google Map显示当前位置、在地图上添加和清除标记、显示口罩资料、自定义Marker
+   17. 增加点击地图上的药店Marker，跳转到药店详情页 
+
+待优化功能：
+   1. 只显示附近的药店
+   2. 缩放地图后多个药店可以合成一个标注显示(显示合并的药局数量)
+   3. 根据口罩数量的多少，标注的颜色深度不同
+
+服务端数据JSON文件：/res/data/pharmacies_data.json
   
 
 
-其他：
-    匿名对象：
-       object: Obj()
+
     

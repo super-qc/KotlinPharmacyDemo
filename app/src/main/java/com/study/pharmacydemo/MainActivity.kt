@@ -99,6 +99,9 @@ class MainActivity : AppCompatActivity(), MainAdapter.IItemClickListener {
             }
         }
         setDefaultCountyWithTown()
+        binding.ivMap.setOnClickListener{
+            startActivity(Intent(this,MapActivity::class.java))
+        }
 
     }
 

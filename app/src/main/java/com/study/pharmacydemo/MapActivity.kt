@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -23,22 +24,28 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.gson.Gson
 import com.study.pharmacydemo.Constants.Companion.REQUEST_ENABLE_GPS
 import com.study.pharmacydemo.Constants.Companion.REQUEST_LOCATION_PERMISSION
+import com.study.pharmacydemo.adapter.MyInfoWindowAdapter
+import com.study.pharmacydemo.data.PharmacyInFo
 import com.study.pharmacydemo.databinding.ActivityMainBinding
 import com.study.pharmacydemo.databinding.ActivityMapBinding
 import com.study.pharmacydemo.util.ImgUtil
 import com.study.pharmacydemo.util.ImgUtil.px
+import com.study.pharmacydemo.util.OkHttpUtil
 import com.study.pharmacydemo.util.ToastUtil
+import okhttp3.Response
+import java.io.IOException
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
     private var locationPermissionGranted = false
     private lateinit var mContext: Context
     private lateinit var binding: ActivityMapBinding
     private lateinit var mLocationProviderClient: FusedLocationProviderClient
     private var mMap: GoogleMap? = null
     private var mCurrentLocationMarker: Marker? = null
-
+    private lateinit var pharmacInfo: PharmacyInFo
     private val defaultLocation = LatLng(25.0338483, 121.5645283)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +63,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
 
         mapFragment.getMapAsync(this)
+
+        binding.ivList.setOnClickListener {
+            toListActivity()
+        }
+    }
+
+    private fun toListActivity() {
+        startActivity(Intent(this,MainActivity::class.java))
     }
 
     private fun getLocationPermission() {
@@ -91,7 +106,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             // GPS已开启
             ToastUtil.showMessage(this, "GPS已开启")
-            getDeviceLocation()
+            //getDeviceLocation()
+            checkLocationPermission()
+            mMap?.isMyLocationEnabled = true
+            mMap?.setInfoWindowAdapter(MyInfoWindowAdapter(mContext))
+            mMap?.setOnInfoWindowClickListener(this)
+            getPharmaciesData()
         }
     }
 
@@ -106,6 +126,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 // numUpdates=1
             }
             checkLocationPermission()
+
+
             mLocationProviderClient.requestLocationUpdates(
                 locationRequest,
                 object : LocationCallback() {
@@ -123,10 +145,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                                 locationResult.lastLocation.longitude
                             )
                         // 清除所有标记
-                        mMap?.clear()
+                        //mMap?.clear()
 
                         // 清除上一次位置标记
-                        mCurrentLocationMarker?.remove()
+                        //mCurrentLocationMarker?.remove()
 
                         // 1. 当下位置Marker存起来，下次清除使用
                         /*
@@ -135,7 +157,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                                 .position(currentLocation).title("当前位置")
                         )*/
 
+
                         // 2. 设置Icon图片来源为向量图
+                        /*
                         mCurrentLocationMarker = mMap?.addMarker(
                             MarkerOptions()
                                 .position(currentLocation).title("当前位置")
@@ -147,21 +171,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     )
                                 )
                         )
-
+                         */
+                        /*
+                        // 自定义marker样式
+                        mMap?.setInfoWindowAdapter(MyInfoWindowAdapter(mContext))
+                        mCurrentLocationMarker = mMap?.addMarker(
+                            MarkerOptions()
+                                .position(currentLocation).title("当前位置")
+                                .snippet(
+                                    "100,66"
+                                )
+                        )
+                        */
 
                         // 3.默认显示Marker 浮窗信息
-                        mCurrentLocationMarker?.showInfoWindow()
+                        //mCurrentLocationMarker?.showInfoWindow()
 
-                        /*
+
                         // 4. 显示当前位置，使用预设的蓝色圆点
                         checkLocationPermission()
                         mMap?.isMyLocationEnabled = true
-                        */
-                        mMap?.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                currentLocation, 15f
-                            )
-                        )
+
+                        // 地图中心移动到固定位置
+                        /*
+                       mMap?.moveCamera(
+                           CameraUpdateFactory.newLatLngZoom(
+                               LatLng(defaultLocation.longitude,defaultLocation.latitude), 15f
+                           )
+                       )
+  */
+
 
                     }
                 }, null
@@ -170,7 +209,61 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             getLocationPermission()
         }
+    }
 
+
+    private fun getPharmaciesData() {
+        binding.progressBar.visibility = View.VISIBLE
+        OkHttpUtil.mOkHttpUtil.getAsync(
+            Constants.PHARMACIES_DATA_URL,
+            object : OkHttpUtil.ICallBack {
+                override fun onResponse(response: Response) {
+                    pharmacInfo = Gson().fromJson(response.body?.string(), PharmacyInFo::class.java)
+                    Log.d("MainActivity", "pharmacInfo.type${pharmacInfo.type}")
+
+                    runOnUiThread {
+                        binding.progressBar.visibility = View.GONE
+                        addAllMarker()
+                    }
+
+                }
+
+                override fun onFailure(e: IOException) {
+                    Log.e("MainActivity onFailure", e.toString())
+                    runOnUiThread {
+                        binding.progressBar.visibility = View.GONE
+                    }
+                }
+            })
+    }
+
+    private fun addAllMarker() {
+        for (index in 1..200) {
+            var feature = pharmacInfo?.features[index]
+
+            if (index == 1) {
+                mMap?.moveCamera(
+                    CameraUpdateFactory.newLatLngZoom(
+                        LatLng(
+                            feature.geometry.coordinates[1],
+                            feature.geometry.coordinates[0],
+                        ), 15f
+                    )
+                )
+            }
+
+            mMap?.addMarker(
+                MarkerOptions()
+                    .position(
+                        LatLng(
+                            feature.geometry.coordinates[1],
+                            feature.geometry.coordinates[0],
+                        )
+                    )
+                    .title(feature.property.name)
+                    .snippet("${feature.property.mask_adult},${feature.property.mask_child}")
+            )
+        }
     }
 
     private fun checkLocationPermission() {
@@ -272,5 +365,25 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         getLocationPermission()
+    }
+
+    /**
+     * 点击进入详情页
+     */
+    override fun onInfoWindowClick(marker: Marker) {
+        marker.title.let { title ->
+            var feature = pharmacInfo.features.filter {
+                it.property.name == title
+            }
+            if (feature != null && feature.size > 0) {
+                val intent = Intent(this, PharmacyDetailActivity::class.java);
+                intent.putExtra("data", feature[0])
+                startActivity(intent)
+            } else {
+                ToastUtil.showMessage(this,"不存在的药局")
+            }
+
+        }
+
     }
 }
