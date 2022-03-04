@@ -28,7 +28,7 @@ kotlin编写的口罩地图应用
 服务端数据JSON文件：/app/src/res/data/pharmacies_data.json
 服务端PHP文件：    /app/src/res/data/pharmacies_data.php
   
-
+Google地图API秘钥申请链接：https://mapsplatform.google.com/
 
 
     
