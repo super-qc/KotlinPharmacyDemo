@@ -25,8 +25,8 @@ kotlin编写的口罩地图应用
    2. 缩放地图后多个药店可以合成一个标注显示(显示合并的药局数量)
    3. 根据口罩数量的多少，标注的颜色深度不同
 
-服务端数据JSON文件：/res/data/pharmacies_data.json
-服务端PHP文件：    /res/data/pharmacies_data.php
+服务端数据JSON文件：/app/src/res/data/pharmacies_data.json
+服务端PHP文件：    /app/src/res/data/pharmacies_data.php
   
 
 
